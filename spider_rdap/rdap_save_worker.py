@@ -30,6 +30,10 @@ class RDAPSaveWorker(threading.Thread):
                 f.write('{}\n'.format(rdap_data['data']))
                 f.close()
 
+            self.logger.debug("Save Queue Size: {}".format(self.save_queue.qsize()))
+            self.logger.debug("Marking task done!")
+            self.save_queue.task_done()
+
     def save_data(self, rdap_data):
         json_file = '{}/{}_{}.json'.format(self.save_path,
                                            rdap_data['domain'], rdap_data['timestamp'])

@@ -5,7 +5,6 @@ import requests
 import threading
 
 from collections import defaultdict
-from random import choice
 from time import sleep
 
 
@@ -18,8 +17,13 @@ class RDAPInput(threading.Thread):
         threading.Thread.__init__(self)
         self.logger = logging.getLogger("SpiderRDAP").getChild("RDAPInput")
         self.manager = manager
-        self.proxy_list = list(config.proxy_list.read().splitlines())
         self.domain_list = config.domain_list
+        """
+        input queue has no maxsize when created to avoid deadlocks.
+        but we try to get input_thread to respect the maxsize limit
+        maybe try to come up with a better fix
+        """
+        self.maxsize = 3 * config.workers
         self.input_queue = self.manager.input_queue
         self.rdap_tld_bootstrap = self.rdap_bootstrap()
 
@@ -38,8 +42,6 @@ class RDAPInput(threading.Thread):
         rdap_query['domain'] = domain
         tld = domain.split('.')[-1].lower()
         rdap_query['rdap_url'] = self.rdap_tld_bootstrap.get(tld, [])
-        random_proxy = choice(self.proxy_list)
-        rdap_query['proxies'] = {'http': random_proxy, 'https': random_proxy}
         return rdap_query
 
     def run(self):
@@ -49,7 +51,9 @@ class RDAPInput(threading.Thread):
             queue_full = True
             while queue_full:
                 try:
-                    self.input_queue.put(rdap_query, block=True, timeout=1)
+                    if self.input_queue.qsize() > self.maxsize:
+                        raise queue.Full
+                    self.input_queue.put(rdap_query, block=True, timeout=5)
                     queue_full = False
                 except queue.Full:
                     sleep(1)
@@ -58,6 +62,8 @@ class RDAPInput(threading.Thread):
                         "Queue Full, Maybe increase number of worker threads!")
                     self.logger.debug(
                         "Queue Full, Trying to put {} in queue again".format(domain))
+                    self.logger.debug(
+                        "Input Queue Size: {}".format(self.input_queue.qsize()))
 
 
 if __name__ == "__main__":

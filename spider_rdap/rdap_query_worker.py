@@ -3,18 +3,19 @@ import logging
 import queue
 import threading
 import time
+import random
 import requests
-
 
 class RDAPQueryWorker(threading.Thread):
 
-    def __init__(self, manager, input_queue, save_queue):
+    def __init__(self, manager, proxy_list, input_queue, save_queue):
         threading.Thread.__init__(self)
         self.logger = logging.getLogger(
             "SpiderRDAP").getChild("RDAPQueryWorker")
         self.manager = manager
         self.input_queue = input_queue
         self.save_queue = save_queue
+        self.proxy_list = proxy_list
 
     def run(self):
         while self.manager.inputThreadsAlive() or not self.input_queue.empty():
@@ -40,22 +41,34 @@ class RDAPQueryWorker(threading.Thread):
                 self.save_queue.put(
                     {'error': None, 'data': json_rdap_data, 'domain': domain, 'timestamp': timestamp})
             elif return_code == 'failed':
-
-                rdap_work_info['attempt'] += 1
-
-                if rdap_work_info['attempt'] > 3:
+                """
+                If 3 attempts we declare failure!
+                """
+                if rdap_work_info['attempt'] >= 3:
                     self.manager.incrFailed()
                     self.manager.incrSkipped()
                     self.save_queue.put(
-                        {'error': 'skipped', 'data': rdap_work_info})
+                        {'error': 'skipped', 'data': rdap_work_info, 'domain': domain, 'timestamp': timestamp})
                 else:
+                    rdap_work_info['attempt'] += 1
+                    self.logger.info(
+                        "Failed attempt: {}".format(rdap_work_info))
+                    """
+                    Potential for deadlock if the input queue is full.
+                    For now, we get around this by keeping the input
+                    queue unbouded but limiting the input_thread to
+                    keep upto 3 * workers items in the input_queue
+                    """
                     self.input_queue.put(rdap_work_info)
+
             else:  # return_code == 'tld_rdap_unsupported'
                 self.manager.incrTLDUnsupported()
                 self.save_queue.put(
-                    {'error': 'tld_unsupported', 'data': rdap_work_info})
+                    {'error': 'tld_unsupported', 'data': rdap_work_info, 'domain': domain, 'timestamp': timestamp})
 
+            self.logger.debug("Marking task done!")
             self.input_queue.task_done()
+            time.sleep(random.uniform(0,1))
 
     def rdap_query(self, rdap_work_info):
         domain = rdap_work_info["domain"]
@@ -64,7 +77,9 @@ class RDAPQueryWorker(threading.Thread):
         rdap_url = rdap_work_info["rdap_url"][rdap_work_info['attempt'] % len(
             rdap_work_info["rdap_url"])]
         query_url = "{}/domain/{}".format(rdap_url, domain)
-        proxies = rdap_work_info["proxies"]
+        random_proxy = random.choice(self.proxy_list)
+        proxies = {'http': random_proxy, 'https': random_proxy}
+        self.logger.debug("Starting GET Request: {} with proxies {}".format(query_url, proxies))
 
         try:
             r = requests.get(query_url, proxies=proxies, timeout=10)
