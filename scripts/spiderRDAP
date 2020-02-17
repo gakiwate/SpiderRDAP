@@ -40,7 +40,8 @@ Set up logger
 """
 logger = logging.getLogger("SpiderRDAP")
 logger.setLevel(logging.DEBUG)
-ch = TimedRotatingFileHandler('spiderRDAP.log', when='h', interval=1, backupCount=5)
+ch = TimedRotatingFileHandler(
+    '{}/spiderRDAP.log'.format(config.save_path), when='h', interval=1, backupCount=5)
 ch.setLevel(LEVELS[config.log_level])
 formatter = logging.Formatter(
     '%(asctime)s - %(levelname)s - %(name)s - %(message)s')

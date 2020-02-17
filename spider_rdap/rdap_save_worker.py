@@ -26,8 +26,8 @@ class RDAPSaveWorker(threading.Thread):
             if rdap_data['error'] is None:
                 self.save_data(rdap_data)
             else:
-                f = open('{}/error.txt'.format(self.save_path))
-                f.write('{}\n'.format(rdap_data['domain']))
+                f = open('{}/error.txt'.format(self.save_path), 'a')
+                f.write('{}\n'.format(rdap_data['data']))
                 f.close()
 
     def save_data(self, rdap_data):

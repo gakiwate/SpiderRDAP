@@ -40,10 +40,11 @@ class RDAPQueryWorker(threading.Thread):
                 self.save_queue.put(
                     {'error': None, 'data': json_rdap_data, 'domain': domain, 'timestamp': timestamp})
             elif return_code == 'failed':
-                self.manager.incrFailed()
+
                 rdap_work_info['attempt'] += 1
 
                 if rdap_work_info['attempt'] > 3:
+                    self.manager.incrFailed()
                     self.manager.incrSkipped()
                     self.save_queue.put(
                         {'error': 'skipped', 'data': rdap_work_info})
@@ -51,6 +52,8 @@ class RDAPQueryWorker(threading.Thread):
                     self.input_queue.put(rdap_work_info)
             else:  # return_code == 'tld_rdap_unsupported'
                 self.manager.incrTLDUnsupported()
+                self.save_queue.put(
+                    {'error': 'tld_unsupported', 'data': rdap_work_info})
 
             self.input_queue.task_done()
 
@@ -63,7 +66,10 @@ class RDAPQueryWorker(threading.Thread):
         query_url = "{}/domain/{}".format(rdap_url, domain)
         proxies = rdap_work_info["proxies"]
 
-        r = requests.get(query_url, proxies=proxies)
+        try:
+            r = requests.get(query_url, proxies=proxies, timeout=10)
+        except Exception as e:
+            return 'failed', e
         json_rdap_data = None
         if r.status_code == 200:
             return_code = 'done'

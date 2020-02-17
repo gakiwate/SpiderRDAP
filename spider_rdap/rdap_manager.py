@@ -16,12 +16,13 @@ class RDAPManager(threading.Thread):
     def __init__(self, config):
         threading.Thread.__init__(self)
         self.logger = logging.getLogger("SpiderRDAP").getChild("RDAPManager")
-        self.input_queue = queue.Queue(maxsize=1)
+        self.input_queue = queue.Queue()
         self.input_threads = [RDAPInput(self, config)]
         self.save_queue = queue.Queue()
-        self.save_threads = [RDAPSaveWorker(self, config, self.save_queue)]
+        self.save_threads = [RDAPSaveWorker(
+            self, config, self.save_queue) for i in range(0, config.workers)]
         self.worker_threads = [RDAPQueryWorker(
-            self, self.input_queue, self.save_queue)]
+            self, self.input_queue, self.save_queue) for i in range(0, config.workers)]
 
         self.stats = {
             'skipped': 0,

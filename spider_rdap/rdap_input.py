@@ -36,7 +36,7 @@ class RDAPInput(threading.Thread):
         rdap_query = {}
         rdap_query['attempt'] = 0
         rdap_query['domain'] = domain
-        tld = domain.split('.')[-1]
+        tld = domain.split('.')[-1].lower()
         rdap_query['rdap_url'] = self.rdap_tld_bootstrap.get(tld, [])
         random_proxy = choice(self.proxy_list)
         rdap_query['proxies'] = {'http': random_proxy, 'https': random_proxy}
