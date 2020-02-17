@@ -11,5 +11,5 @@ setup(name='SpiderRDAP',
       install_requires=[
           'requests'
       ],
-      scripts=[],
+      scripts=['scripts/spiderRDAP'],
       zip_safe=False)
