@@ -9,7 +9,8 @@ setup(name='SpiderRDAP',
       license='GPLv2',
       packages=['spider_rdap'],
       install_requires=[
-          'requests'
+          'requests',
+          'PySocks'
       ],
       scripts=['scripts/spiderRDAP'],
       zip_safe=False)
