@@ -47,3 +47,21 @@ Newline separated proxies in a file
 ```
 
 Code tested with socks4.
+
+## AWS SpiderRDAP
+
+Sample aws_config file
+```
+{
+   "REGIONS": [
+      "us-west-1",
+   ],
+   "TAGS": [
+      "rdap"
+   ]
+}
+```
+
+Run with awsTestSpiderRDAP to make sure that
+the the AWS Credentials and Instances are
+up and running

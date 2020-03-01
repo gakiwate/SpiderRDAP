@@ -10,7 +10,8 @@ setup(name='SpiderRDAP',
       packages=['spider_rdap'],
       install_requires=[
           'requests',
-          'PySocks'
+          'PySocks',
+          'boto3'
       ],
-      scripts=['scripts/spiderRDAP'],
+      scripts=['scripts/spiderRDAP', 'scripts/spiderRDAPAWSTest'],
       zip_safe=False)

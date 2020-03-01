@@ -1,0 +1,23 @@
+#!/usr/bin/env python3
+
+import argparse
+import boto3
+import json
+
+parser = argparse.ArgumentParser(description='awsTestSpiderRDAP')
+parser.add_argument('--aws-config', action='store', type=argparse.FileType('r'),
+                    help='AWS Config File', required=True)
+config = parser.parse_args()
+
+aws_config = json.load(config.aws_config)
+aws_regions = aws_config['REGIONS']
+aws_tags = aws_config['TAGS']
+
+for region in aws_regions:
+    client = boto3.client('ec2', region_name=region)
+    r = client.describe_instances(
+        Filters=[{'Name': 'tag-key', 'Values': aws_tags}])
+    for reservation in r.get('Reservations', []):
+        for instance in reservation.get('Instances', []):
+            print("InstanceId: {}\tPublicDnsName:{}".format(
+                instance['InstanceId'], instance['PublicDnsName']))
