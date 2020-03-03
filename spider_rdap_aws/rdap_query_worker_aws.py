@@ -9,13 +9,14 @@ import xmlrpc.client
 
 class RDAPQueryWorkerAWS(threading.Thread):
 
-    def __init__(self, manager, host, port, input_queue, save_queue):
+    def __init__(self, manager, host, port, input_queue, save_queue, retry_count):
         threading.Thread.__init__(self)
         self.logger = logging.getLogger(
             "SpiderRDAPAWS").getChild("RDAPQueryWorkerAWS")
         self.manager = manager
         self.input_queue = input_queue
         self.save_queue = save_queue
+        self.retry_count = retry_count
         self.rpc_client = self.setup_connection(host, port)
 
     def setup_connection(self, host, port):
@@ -50,9 +51,9 @@ class RDAPQueryWorkerAWS(threading.Thread):
                     {'error': None, 'data': json_rdap_data, 'domain': domain, 'timestamp': timestamp})
             elif return_code == 'failed':
                 """
-                If 2 attempts fail we declare failure!
+                If retry_count number attempts fail we skip domain!
                 """
-                if rdap_work_info['attempt'] >= 1:
+                if rdap_work_info['attempt'] >= self.retry_count:
                     self.manager.incrFailed()
                     self.manager.incrSkipped()
                     self.save_queue.put(
@@ -72,6 +73,7 @@ class RDAPQueryWorkerAWS(threading.Thread):
 
             else:  # return_code == 'tld_rdap_unsupported'
                 self.manager.incrTLDUnsupported()
+                self.manager.incrSkipped()
                 self.save_queue.put(
                     {'error': 'tld_unsupported', 'data': rdap_work_info, 'domain': domain, 'timestamp': timestamp})
 

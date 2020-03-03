@@ -88,6 +88,8 @@ optional arguments:
   --log-level {debug,info,warning,error,critical}
   --batch-multiplier BATCH_MULTIPLIER
                         multiplier to decide on number of domains to batch
+  --retry-count RETRY_COUNT
+                        number of times to retry RDAP query
   --quiet               Quiesce output
 ```
 

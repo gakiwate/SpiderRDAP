@@ -32,6 +32,8 @@ parser.add_argument("--log-level", default="warning",
                     choices=list(LEVELS.keys()))
 parser.add_argument("--batch-multiplier", action='store', type=int,
                     default=30, help="multiplier to decide on number of domains to batch")
+parser.add_argument("--retry-count", action='store', type=int,
+                    default=1, help="number of times to retry RDAP query")
 parser.add_argument("--quiet", action='store_true', help='Quiesce output')
 config = parser.parse_args()
 

@@ -26,6 +26,7 @@ class RDAPManagerAWS(threading.Thread):
         self.aws_tags = aws_config['TAGS']
         self.aws_ports = aws_config['PORTS']
         self.save_path = config.save_path
+        self.retry_count = config.retry_count
 
         """
         Initialize AWS Instances
@@ -77,7 +78,7 @@ class RDAPManagerAWS(threading.Thread):
             for elasticIP in map(lambda instance: instance.getElasticIP(), self.aws_instances):
                 for port in self.aws_ports:
                     self.worker_threads.append(RDAPQueryWorkerAWS(
-                        self, elasticIP, port, self.input_queue, self.save_queue))
+                        self, elasticIP, port, self.input_queue, self.save_queue, self.retry_count))
 
             list(map(lambda thread: thread.start(), self.worker_threads))
             list(map(lambda thread: thread.start(), self.save_threads))
