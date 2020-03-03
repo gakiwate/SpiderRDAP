@@ -50,9 +50,9 @@ class RDAPQueryWorkerAWS(threading.Thread):
                     {'error': None, 'data': json_rdap_data, 'domain': domain, 'timestamp': timestamp})
             elif return_code == 'failed':
                 """
-                If 3 attempts we declare failure!
+                If 2 attempts fail we declare failure!
                 """
-                if rdap_work_info['attempt'] >= 3:
+                if rdap_work_info['attempt'] >= 1:
                     self.manager.incrFailed()
                     self.manager.incrSkipped()
                     self.save_queue.put(
