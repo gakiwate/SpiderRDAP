@@ -51,7 +51,7 @@ logger.info("Starting Manager")
 Manager Start Up
 """
 manager = RDAPManagerAWS(config)
-#manager.start()
+manager.start()
 
 
 """
