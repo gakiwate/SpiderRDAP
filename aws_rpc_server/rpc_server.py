@@ -11,7 +11,7 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
 
 def queryRemoteRDAP(query_url):
     try:
-        r = requests.get(query_url, timeout=10)
+        r = requests.get(query_url, timeout=5)
     except Exception as e:
         return 'failed', e
     json_rdap_data = None
