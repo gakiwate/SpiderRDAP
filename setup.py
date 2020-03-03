@@ -7,11 +7,12 @@ setup(name='SpiderRDAP',
       author='Gautam Akiwate',
       author_email='gakiwate@cs.ucsd.edu',
       license='GPLv2',
-      packages=['spider_rdap'],
+      packages=['spider_rdap', 'spider_rdap_aws'],
       install_requires=[
           'requests',
           'PySocks',
           'boto3'
       ],
-      scripts=['scripts/spiderRDAP', 'scripts/spiderRDAPAWSTest'],
+      scripts=['scripts/spiderRDAP',
+               'scripts/spiderRDAPAWSTest', 'scripts/spiderRDAPAWS'],
       zip_safe=False)
