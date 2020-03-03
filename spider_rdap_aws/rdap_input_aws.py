@@ -12,14 +12,15 @@ class RDAPInputAWS():
     '''
 
     def __init__(self, manager, domain_list, num_instances):
-        self.logger = logging.getLogger("SpiderRDAPAWS").getChild("RDAPInputAWS")
+        self.logger = logging.getLogger(
+            "SpiderRDAPAWS").getChild("RDAPInputAWS")
         self.manager = manager
         self.domain_list = list(domain_list.read().splitlines())
         self.all_done = False
         """
-        for every batch we get 20 domains per instance
+        for every batch we get 15 domains per instance
         """
-        self.batch_size = 20 * num_instances
+        self.batch_size = 15 * num_instances
         self.input_queue = self.manager.input_queue
         self.rdap_tld_bootstrap = self.rdap_bootstrap()
 
@@ -68,7 +69,9 @@ class RDAPInputAWS():
         for domain in domain_batch:
             rdap_query = self.construct_query(domain)
             self.input_queue.put(rdap_query, block=True, timeout=5)
-            self.logger.debug("Input Queue Size: {}".format(self.input_queue.qsize()))
+            self.logger.debug("Input Queue Size: {}".format(
+                self.input_queue.qsize()))
+
 
 if __name__ == "__main__":
     pass

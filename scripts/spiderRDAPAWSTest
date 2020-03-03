@@ -3,6 +3,9 @@
 import argparse
 import boto3
 import json
+import xmlrpc.client
+
+from spider_rdap_aws import RDAPInstanceAWS
 
 parser = argparse.ArgumentParser(description='awsTestSpiderRDAP')
 parser.add_argument('--aws-config', action='store', type=argparse.FileType('r'),
@@ -12,6 +15,9 @@ config = parser.parse_args()
 aws_config = json.load(config.aws_config)
 aws_regions = aws_config['REGIONS']
 aws_tags = aws_config['TAGS']
+aws_ports = aws_config['PORTS']
+
+query_url = "https://rdap.verisign.com/com/v1/domain/google.com"
 
 for region in aws_regions:
     client = boto3.client('ec2', region_name=region)
@@ -19,5 +25,12 @@ for region in aws_regions:
         Filters=[{'Name': 'tag-key', 'Values': aws_tags}])
     for reservation in r.get('Reservations', []):
         for instance in reservation.get('Instances', []):
-            print("InstanceId: {}\tPublicDnsName:{}".format(
-                instance['InstanceId'], instance['PublicDnsName']))
+            instance_id = instance['InstanceId']
+            rinstance = RDAPInstanceAWS(region, instance_id)
+            for port in aws_ports:
+                host = rinstance.getElasticIP()
+                target_url = 'http://{}:{}'.format(str(host), str(port))
+                rpc_client = xmlrpc.client.ServerProxy(target_url)
+                return_code, json_rdap_data = rpc_client.queryRDAP(query_url)
+                print("Check Instance {} :: IP {} :: Port {} :: Region {} :: Status {}".format(
+                    instance_id, host, port, region, return_code))

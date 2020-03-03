@@ -59,14 +59,11 @@ class RDAPManagerAWS(threading.Thread):
             'tld_unsupported': 0
         }
 
-        self.logger.info(list(map(lambda instance: instance.getElasticIP(), self.aws_instances)))
+        self.logger.info(
+            list(map(lambda instance: instance.getElasticIP(), self.aws_instances)))
 
     def run(self):
         self.logger.info('Starting threads...')
-        #list(map(lambda thread: thread.start(), self.input_threads))
-        # self.logger.debug(self.input_queue.qsize())
-        # sleep(1)
-        #self.logger.info('All threads started')
         while not self.save_queue.empty() or not self.input_queue.empty() or not self.inputter.isDone():
             try:
                 self.inputter.enqueueDomainBatch()
@@ -95,9 +92,8 @@ class RDAPManagerAWS(threading.Thread):
 
             self.logger.info(self.stats)
             list(map(lambda instance: instance.switchElasticIPs(), self.aws_instances))
-            self.logger.info(list(map(lambda instance: instance.getElasticIP(), self.aws_instances)))
-
-
+            self.logger.info(
+                list(map(lambda instance: instance.getElasticIP(), self.aws_instances)))
 
     def workerThreadsAlive(self):
         return any(map(lambda thread: thread.is_alive(), self.worker_threads))

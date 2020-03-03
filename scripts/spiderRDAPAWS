@@ -21,7 +21,7 @@ def isValidPath(save_path):
     raise argparse.ArgumentTypeError("{save_path} is not a valid path")
 
 
-parser = argparse.ArgumentParser(description='SpiderRDAP')
+parser = argparse.ArgumentParser(description='SpiderRDAPAWS')
 parser.add_argument('--domain-list', action='store', type=argparse.FileType('r'),
                     help='file with list of domains', required=True)
 parser.add_argument('--save_path', action='store', type=lambda save_path: isValidPath(save_path),

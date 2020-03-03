@@ -30,7 +30,8 @@ class RDAPSaveWorkerAWS(threading.Thread):
                 f.write('{}\n'.format(rdap_data['data']))
                 f.close()
 
-            self.logger.debug("Save Queue Size: {}".format(self.save_queue.qsize()))
+            self.logger.debug("Save Queue Size: {}".format(
+                self.save_queue.qsize()))
             self.logger.debug("Worker Threads Alive: {}".format(
                 self.manager.workerThreadsAlive()))
             self.logger.debug("Marking task done!")
