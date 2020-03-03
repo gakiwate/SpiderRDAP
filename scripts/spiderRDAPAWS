@@ -30,6 +30,8 @@ parser.add_argument('--aws-config', action='store', type=argparse.FileType('r'),
                     help='AWS Config File', required=True)
 parser.add_argument("--log-level", default="warning",
                     choices=list(LEVELS.keys()))
+parser.add_argument("--batch-multiplier", action='store', type=int,
+                    default=10, help="multiplier to decide on number of domains to batch")
 parser.add_argument("--quiet", action='store_true', help='Quiesce output')
 config = parser.parse_args()
 

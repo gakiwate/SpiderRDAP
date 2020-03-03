@@ -48,7 +48,7 @@ class RDAPManagerAWS(threading.Thread):
         """
         self.input_queue = queue.Queue()
         self.inputter = RDAPInputAWS(
-            self, config.domain_list, len(self.aws_instances))
+            self, config.domain_list, config.batch_multiplier, len(self.aws_instances))
         self.save_queue = queue.Queue()
 
         self.stats = {

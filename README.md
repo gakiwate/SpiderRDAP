@@ -86,6 +86,8 @@ optional arguments:
   --aws-config AWS_CONFIG
                         AWS Config File
   --log-level {debug,info,warning,error,critical}
+  --batch-multiplier BATCH_MULTIPLIER
+                        multiplier to decide on number of domains to batch
   --quiet               Quiesce output
 ```
 
