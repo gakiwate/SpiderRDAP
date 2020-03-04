@@ -1,5 +1,6 @@
 import boto3
 import logging
+from time import sleep
 
 
 class RDAPInstanceAWS():
@@ -49,14 +50,34 @@ class RDAPInstanceAWS():
 
     def assign_new_ips(self):
         self.logger.info("Assigning New Elastic IPs")
-        r = self.aws_client.allocate_address(Domain='vpc')
-        self.allocation_id = r['AllocationId']
-        self.elastic_ip = r['PublicIp']
-        r = self.aws_client.associate_address(
-            AllocationId=self.allocation_id,
-            InstanceId=self.instance_id,
-        )
-        self.association_id = r['AssociationId']
+        attempt = 0
+        success = False
+        while not success and attempt < 3:
+            try:
+                r = self.aws_client.allocate_address(Domain='vpc')
+                self.allocation_id = r['AllocationId']
+                self.elastic_ip = r['PublicIp']
+                sleep(1)
+                r = self.aws_client.associate_address(
+                    AllocationId=self.allocation_id,
+                    InstanceId=self.instance_id,
+                )
+                self.association_id = r['AssociationId']
+                success = True
+            except Exception as e:
+                self.logger.info(
+                    "Assigning new Elastic IPs Failed. Error: {}".format(e))
+                sleep(1)
+                try:
+                    self.logger.info(
+                        "Possible allocation failure. Try and release the address")
+                    r = self.aws_client.release_address(
+                        AllocationId=self.allocation_id,
+                    )
+                except Exception as e:
+                    self.logger.info(
+                        "Allocation Failure Release also failed. Error: {}".format(e))
+                attempt += 1
 
     def switchElasticIPs(self):
         self.logger.info("Switch Elastic IPs")
