@@ -5,6 +5,7 @@ import boto3
 import json
 import xmlrpc.client
 
+from concurrent.futures import ThreadPoolExecutor
 from spider_rdap_aws import RDAPInstanceAWS
 
 parser = argparse.ArgumentParser(description='awsTestSpiderRDAP')
@@ -18,6 +19,7 @@ aws_tags = aws_config['TAGS']
 aws_ports = aws_config['PORTS']
 
 query_url = "https://rdap.verisign.com/com/v1/domain/google.com"
+aws_instances = []
 
 for region in aws_regions:
     client = boto3.client('ec2', region_name=region)
@@ -27,6 +29,7 @@ for region in aws_regions:
         for instance in reservation.get('Instances', []):
             instance_id = instance['InstanceId']
             rinstance = RDAPInstanceAWS(region, instance_id)
+            aws_instances.append(rinstance)
             for port in aws_ports:
                 host = rinstance.getElasticIP()
                 target_url = 'http://{}:{}'.format(str(host), str(port))
@@ -34,3 +37,8 @@ for region in aws_regions:
                 return_code, json_rdap_data = rpc_client.queryRDAP(query_url)
                 print("Check Instance {} :: IP {} :: Port {} :: Region {} :: Status {}".format(
                     instance_id, host, port, region, return_code))
+
+
+with ThreadPoolExecutor(max_workers=len(aws_instances)) as executor:
+    executor.map(lambda instance: instance.switchElasticIPs(),
+                 aws_instances)

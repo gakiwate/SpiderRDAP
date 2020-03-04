@@ -4,6 +4,7 @@ import logging
 import queue
 import threading
 
+from concurrent.futures import ThreadPoolExecutor
 from time import sleep
 
 from .rdap_input_aws import RDAPInputAWS
@@ -92,7 +93,9 @@ class RDAPManagerAWS(threading.Thread):
                     self.saveThreadsAlive()))
 
             self.logger.info(self.stats)
-            list(map(lambda instance: instance.switchElasticIPs(), self.aws_instances))
+            with ThreadPoolExecutor(max_workers=len(self.aws_instances)) as executor:
+                executor.map(
+                    lambda instance: instance.switchElasticIPs(), self.aws_instances)
             self.logger.info(
                 list(map(lambda instance: instance.getElasticIP(), self.aws_instances)))
 
