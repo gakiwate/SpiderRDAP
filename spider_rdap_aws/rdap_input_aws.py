@@ -11,16 +11,12 @@ class RDAPInputAWS():
     RDAPInput
     '''
 
-    def __init__(self, manager, domain_list, batch_multiplier, num_instances):
+    def __init__(self, manager, domain_list, num_instances):
         self.logger = logging.getLogger(
             "SpiderRDAPAWS").getChild("RDAPInputAWS")
         self.manager = manager
         self.domain_list = list(domain_list.read().splitlines())
         self.all_done = False
-        """
-        for every batch we get batch_multiplier domains per instance
-        """
-        self.batch_size = batch_multiplier * num_instances
         self.input_queue = self.manager.input_queue
         self.rdap_tld_bootstrap = self.rdap_bootstrap()
 
@@ -44,7 +40,7 @@ class RDAPInputAWS():
     def isDone(self):
         return self.all_done
 
-    def enqueueDomainBatch(self):
+    def enqueueDomainBatch(self, batch_size):
         '''
         The RDAPInputAWS needs to batch the
         domains since the consumption model
@@ -55,7 +51,7 @@ class RDAPInputAWS():
         if len(self.domain_list) == 0:
             self.all_done = True
         domain_batch = []
-        while len(domain_batch) < self.batch_size:
+        while len(domain_batch) < batch_size:
             try:
                 domain = self.domain_list.pop()
                 domain = domain.strip()

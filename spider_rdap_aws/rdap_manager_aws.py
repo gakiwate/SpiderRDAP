@@ -28,6 +28,7 @@ class RDAPManagerAWS(threading.Thread):
         self.aws_ports = aws_config['PORTS']
         self.save_path = config.save_path
         self.retry_count = config.retry_count
+        self.batch_multiplier = int(config.batch_multiplier)
 
         """
         Initialize AWS Instances
@@ -50,7 +51,7 @@ class RDAPManagerAWS(threading.Thread):
         """
         self.input_queue = queue.Queue()
         self.inputter = RDAPInputAWS(
-            self, config.domain_list, config.batch_multiplier, len(self.aws_instances))
+            self, config.domain_list, len(self.aws_instances))
         self.save_queue = queue.Queue()
 
         self.stats = {
@@ -67,8 +68,12 @@ class RDAPManagerAWS(threading.Thread):
     def run(self):
         self.logger.info('Starting threads...')
         while not self.save_queue.empty() or not self.input_queue.empty() or not self.inputter.isDone():
+            batch_size = sum(map(lambda instance: not instance.ipReused, self.aws_instances)) * self.batch_multiplier
+            if batch_size == 0:
+                self.logger.warning("Batch Size is 0. Possible Reuse on all instances")
+                self.logger.info("Skipping queueing domains since no new IPs")
             try:
-                self.inputter.enqueueDomainBatch()
+                self.inputter.enqueueDomainBatch(batch_size)
             except Exception as e:
                 self.logger.info("Exception when enqueing {}".format(e))
 
@@ -96,6 +101,9 @@ class RDAPManagerAWS(threading.Thread):
             with ThreadPoolExecutor(max_workers=len(self.aws_instances)) as executor:
                 executor.map(
                     lambda instance: instance.switchElasticIPs(), self.aws_instances)
+
+            sleep(1)
+
             self.logger.info(
                 list(map(lambda instance: instance.getElasticIP(), self.aws_instances)))
 

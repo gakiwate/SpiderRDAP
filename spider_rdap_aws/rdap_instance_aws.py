@@ -12,6 +12,8 @@ class RDAPInstanceAWS():
         self.elastic_ip = None
         self.allocation_id = None
         self.association_id = None
+        self.prev_elastic_ips = set()
+        self.ipReused = False
         self.logger = logging.getLogger(
             "SpiderRDAPAWS").getChild("RDAPInstanceAWS").getChild(self.instance_id)
 
@@ -52,6 +54,8 @@ class RDAPInstanceAWS():
                 self.logger.debug("Initialization Failed!")
                 self.logger.debug(ids)
                 raise Exception
+
+        self.prev_elastic_ips.add(self.elastic_ip)
 
     def start_instance(self):
         self.logger.info("Starting Instance {}")
@@ -129,6 +133,11 @@ class RDAPInstanceAWS():
             self.logger.error(
                 "Assigning new IPs Failed. Error: {}".format(e))
             raise
+
+        if self.elastic_ip in self.prev_elastic_ips:
+            self.ipReused = True
+        else:
+            self.ipReused = False
 
     def getElasticIP(self):
         r = self.aws_client.describe_instances(InstanceIds=[self.instance_id])
