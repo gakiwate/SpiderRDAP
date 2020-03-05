@@ -61,6 +61,8 @@ class RDAPInstanceAWS():
         sleep(15)
 
     def stopInstance(self):
+        self.release_elastic_ips()
+        sleep(5)
         self.instance_client.stop()
 
     def assign_new_ips(self):
@@ -97,8 +99,7 @@ class RDAPInstanceAWS():
                 if attempt == 3:
                     raise
 
-    def switchElasticIPs(self):
-        self.logger.info("Switch Elastic IPs")
+    def release_elastic_ips(self):
         try:
             r = self.aws_client.disassociate_address(
                 AssociationId=self.association_id,
@@ -115,14 +116,18 @@ class RDAPInstanceAWS():
         except Exception as e:
             self.logger.warning(
                 "Release Address Failed. Error: {}".format(e))
-            self.logger.info(
-                "Trying to Assign New Address.")
+
+    def switchElasticIPs(self):
+        self.logger.info("Switch Elastic IPs")
+        self.release_elastic_ips()
+        self.logger.info(
+            "Trying to Assign New Address.")
 
         try:
             self.assign_new_ips()
         except Exception as e:
             self.logger.error(
-                "Release Address Failed. Error: {}".format(e))
+                "Assigning new IPs Failed. Error: {}".format(e))
             raise
 
     def getElasticIP(self):
