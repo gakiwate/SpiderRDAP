@@ -99,6 +99,10 @@ class RDAPManagerAWS(threading.Thread):
             self.logger.info(
                 list(map(lambda instance: instance.getElasticIP(), self.aws_instances)))
 
+        with ThreadPoolExecutor(max_workers=len(self.aws_instances)) as executor:
+            executor.map(
+                lambda instance: instance.stopInstance(), self.aws_instances)
+
     def workerThreadsAlive(self):
         return any(map(lambda thread: thread.is_alive(), self.worker_threads))
 

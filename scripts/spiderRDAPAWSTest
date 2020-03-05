@@ -39,6 +39,13 @@ for region in aws_regions:
                     instance_id, host, port, region, return_code))
 
 
+print("Testing Switching IPs")
 with ThreadPoolExecutor(max_workers=len(aws_instances)) as executor:
     executor.map(lambda instance: instance.switchElasticIPs(),
+                 aws_instances)
+print(list(map(lambda instance: instance.getElasticIP(), aws_instances)))
+
+print("Shutting down Instance")
+with ThreadPoolExecutor(max_workers=len(aws_instances)) as executor:
+    executor.map(lambda instance: instance.stopInstance(),
                  aws_instances)

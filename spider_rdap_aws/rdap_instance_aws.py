@@ -15,6 +15,11 @@ class RDAPInstanceAWS():
         self.logger = logging.getLogger(
             "SpiderRDAPAWS").getChild("RDAPInstanceAWS").getChild(self.instance_id)
 
+        self.logger.info("Start instance if not running")
+        self.instance_client = boto3.resource(
+            'ec2', region_name=region).Instance(instance_id)
+        self.start_instance()
+
         '''
         First, we see if we have an elastic IP assigned.
         If we do, then we continue otherwise we assign
@@ -48,6 +53,16 @@ class RDAPInstanceAWS():
                 self.logger.debug(ids)
                 raise Exception
 
+    def start_instance(self):
+        self.logger.info("Starting Instance {}")
+        self.instance_client.start()
+        self.instance_client.wait_until_running()
+        self.logger.info("Sleeping for 15 sec")
+        sleep(15)
+
+    def stopInstance(self):
+        self.instance_client.stop()
+
     def assign_new_ips(self):
         self.logger.info("Assigning New Elastic IPs")
         attempt = 0
@@ -65,19 +80,22 @@ class RDAPInstanceAWS():
                 self.association_id = r['AssociationId']
                 success = True
             except Exception as e:
-                self.logger.info(
+                self.logger.warning(
                     "Assigning new Elastic IPs Failed. Error: {}".format(e))
                 sleep(1)
                 try:
-                    self.logger.info(
+                    self.logger.warning(
                         "Possible allocation failure. Try and release the address")
                     r = self.aws_client.release_address(
                         AllocationId=self.allocation_id,
                     )
                 except Exception as e:
-                    self.logger.info(
+                    self.logger.warning(
                         "Allocation Failure Release also failed. Error: {}".format(e))
                 attempt += 1
+
+                if attempt == 3:
+                    raise
 
     def switchElasticIPs(self):
         self.logger.info("Switch Elastic IPs")
@@ -85,13 +103,26 @@ class RDAPInstanceAWS():
             r = self.aws_client.disassociate_address(
                 AssociationId=self.association_id,
             )
+        except Exception as e:
+            self.logger.info(
+                "Disassociating Address Failed. Error: {}".format(e))
+            self.logger.info(
+                "Trying to Release Address.")
+        try:
             r = self.aws_client.release_address(
                 AllocationId=self.allocation_id,
             )
+        except Exception as e:
+            self.logger.warning(
+                "Release Address Failed. Error: {}".format(e))
+            self.logger.info(
+                "Trying to Assign New Address.")
+
+        try:
             self.assign_new_ips()
         except Exception as e:
-            self.logger.info(
-                "Switching Elastic IPs Failed. Error: {}".format(e))
+            self.logger.error(
+                "Release Address Failed. Error: {}".format(e))
             raise
 
     def getElasticIP(self):
