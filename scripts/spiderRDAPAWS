@@ -24,7 +24,7 @@ def isValidPath(save_path):
 parser = argparse.ArgumentParser(description='SpiderRDAPAWS')
 parser.add_argument('--domain-list', action='store', type=argparse.FileType('r'),
                     help='file with list of domains', required=True)
-parser.add_argument('--save_path', action='store', type=lambda save_path: isValidPath(save_path),
+parser.add_argument('--save-path', action='store', type=lambda save_path: isValidPath(save_path),
                     help='file path to save RDAP Output', required=True)
 parser.add_argument('--aws-config', action='store', type=argparse.FileType('r'),
                     help='AWS Config File', required=True)

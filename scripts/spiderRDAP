@@ -7,12 +7,13 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 from time import sleep
 
-LEVELS = {'debug': logging.DEBUG,
-          'info': logging.INFO,
-          'warning': logging.WARNING,
-          'error': logging.ERROR,
-          'critical': logging.CRITICAL
-          }
+LEVELS = {
+    'debug': logging.DEBUG,
+    'info': logging.INFO,
+    'warning': logging.WARNING,
+    'error': logging.ERROR,
+    'critical': logging.CRITICAL
+}
 
 
 def isValidPath(save_path):
@@ -24,7 +25,7 @@ def isValidPath(save_path):
 parser = argparse.ArgumentParser(description='SpiderRDAP')
 parser.add_argument('--domain-list', action='store', type=argparse.FileType('r'),
                     help='file with list of domains', required=True)
-parser.add_argument('--save_path', action='store', type=lambda save_path: isValidPath(save_path),
+parser.add_argument('--save-path', action='store', type=lambda save_path: isValidPath(save_path),
                     help='file path to save RDAP Output', required=True)
 parser.add_argument('--proxy-list', action='store',
                     type=argparse.FileType('r'), help='file with list of proxies to use', required=True)
