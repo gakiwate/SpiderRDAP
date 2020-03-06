@@ -1,0 +1,99 @@
+#!/usr/bin/env python3
+
+import argparse
+from os import path
+from spider_rdap_lambda import RDAPManagerLambda
+import logging
+from logging.handlers import TimedRotatingFileHandler
+from time import sleep
+
+LEVELS = {'debug': logging.DEBUG,
+          'info': logging.INFO,
+          'warning': logging.WARNING,
+          'error': logging.ERROR,
+          'critical': logging.CRITICAL
+          }
+
+REGIONS = [
+    "ap-northeast-1",
+    "ap-northeast-2",
+    "ap-south-1",
+    "ap-southeast-1",
+    "ap-southeast-2",
+    "ca-central-1",
+    "eu-central-1",
+    "eu-west-1",
+    "eu-west-2",
+    "eu-west-3",
+    "eu-north-1",
+    "sa-east-1",
+    "us-east-1",
+    "us-east-2",
+    "us-west-1",
+    "us-west-2"
+]
+
+
+def isValidPath(save_path):
+    if path.isdir(save_path):
+        return save_path
+    raise argparse.ArgumentTypeError("{save_path} is not a valid path")
+
+
+def validLambdaWorkers(num):
+    """
+    We can atmost run lambda-workers
+    of domains
+    """
+    if int(num) <= 1000:
+        return int(num)
+    raise argparse.ArgumentTypeError("Lambda workers can be atmost 1000")
+
+
+parser = argparse.ArgumentParser(description='SpiderRDAP')
+parser.add_argument('--domain-list', action='store', type=argparse.FileType('r'),
+                    help='file with list of domains', required=True)
+parser.add_argument('--save-path', action='store', type=lambda save_path: isValidPath(save_path),
+                    help='file path to save RDAP Output', required=True)
+parser.add_argument('--lambda-workers', action='store',
+                    type=lambda num: validLambdaWorkers(num), help='number of workers', required=True)
+parser.add_argument("--log-level", default="warning",
+                    choices=list(LEVELS.keys()))
+parser.add_argument("--region", help='AWS Region to run lambdas from',
+                    choices=REGIONS, required=True)
+parser.add_argument("--quiet", action='store_true', help='Quiesce output')
+config = parser.parse_args()
+
+"""
+Set up logger
+"""
+logger = logging.getLogger("SpiderRDAPLambda")
+logger.setLevel(logging.DEBUG)
+ch = TimedRotatingFileHandler(
+    '{}/spiderRDAPLambda.log'.format(config.save_path), when='h', interval=1, backupCount=5)
+ch.setLevel(LEVELS[config.log_level])
+formatter = logging.Formatter(
+    '%(asctime)s - %(levelname)s - %(name)s - %(message)s')
+ch.setFormatter(formatter)
+logger.addHandler(ch)
+logger.info("Starting Manager")
+
+"""
+Manager Start Up
+"""
+manager = RDAPManagerLambda(config)
+manager.start()
+
+
+"""
+Stay alive till manager dies
+"""
+print("skipped\tfailed\tin_progress\tdone\ttld_unsupported")
+while manager.isAlive():
+    if not config.quiet:
+        stats = manager.stats
+        status_line = "{}\t{}\t{}\t{}\t{}\r".format(
+            stats['skipped'], stats['failed'], stats['in_progress'], stats['done'], stats['tld_unsupported'])
+        print(status_line, end='')
+    sleep(1)
+print("")
