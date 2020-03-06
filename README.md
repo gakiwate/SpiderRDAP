@@ -114,3 +114,36 @@ Sample aws_config file
 Run with spiderRDAPAWSTest to make sure that
 the the AWS Credentials and Instances are
 up and running
+
+## SpiderRDAPLambda
+
+SpiderRDAPLambda should be used to do bulk queries.
+
+## Running spiderRDAPLambda
+```
+usage: spiderRDAPLambda [-h] --domain-list DOMAIN_LIST --save-path SAVE_PATH
+                        --lambda-workers LAMBDA_WORKERS
+                        [--log-level {debug,info,warning,error,critical}]
+                        --region
+                        {ap-northeast-1,ap-northeast-2,ap-south-1,ap-southeast-1,ap-southeast-2,ca-central-1,eu-central-1,eu-west-1,eu-west-2,eu-west-3,eu-north-1,sa-east-1,us-east-1,us-east-2,us-west-1,us-west-2}
+                        [--quiet]
+
+SpiderRDAP
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --domain-list DOMAIN_LIST
+                        file with list of domains
+  --save-path SAVE_PATH
+                        file path to save RDAP Output
+  --lambda-workers LAMBDA_WORKERS
+                        number of workers
+  --log-level {debug,info,warning,error,critical}
+  --region {ap-northeast-1,ap-northeast-2,ap-south-1,ap-southeast-1,ap-southeast-2,ca-central-1,eu-central-1,eu-west-1,eu-west-2,eu-west-3,eu-north-1,sa-east-1,us-east-1,us-east-2,us-west-1,us-west-2}
+                        AWS Region to run lambdas from
+  --quiet               Quiesce output
+```
+
+Note, you can only spawn upto 1000 workers at a time. This is AWS limitation.
+
+If you provide a domain list with more than 1000 domains they will not be queried.
