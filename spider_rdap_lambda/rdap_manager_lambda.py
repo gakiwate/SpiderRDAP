@@ -25,8 +25,10 @@ class RDAPManagerLambda(threading.Thread):
             logger_name = "SpiderRDAPLambda"
         self.logger = logging.getLogger(
             logger_name).getChild("RDAPManagerLambda")
+        self.logger.debug("Logger Name: {}".format(logger_name))
         self.region = config.region
-        self.logger.info('Initializing Manager for region: {}'.format(self.region))
+        self.logger.info(
+            'Initializing Manager for region: {}'.format(self.region))
         self.save_path = config.save_path
         self.lambda_ips = []
         """
@@ -54,7 +56,7 @@ class RDAPManagerLambda(threading.Thread):
             self.logger.info("Exception when enqueing {}".format(e))
 
         self.save_threads = [RDAPSaveWorkerLambda(
-            self, self.save_path, self.save_queue) for i in range(0, ceil(self.lambda_workers / 10))]
+            self, self.save_path, self.save_queue) for i in range(0, ceil(self.lambda_workers / 100))]
         self.worker_threads = [RDAPQueryWorkerLambda(
             self, self.region, self.input_queue, self.save_queue) for i in range(0, self.lambda_workers)]
 
