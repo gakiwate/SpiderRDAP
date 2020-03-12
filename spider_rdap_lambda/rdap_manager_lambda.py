@@ -20,9 +20,13 @@ class RDAPManagerLambda(threading.Thread):
 
     def __init__(self, config):
         threading.Thread.__init__(self)
+        logger_name = config.logger_name
+        if logger_name == None:
+            logger_name = "SpiderRDAPLambda"
         self.logger = logging.getLogger(
-            "SpiderRDAPLambda").getChild("RDAPManagerLambda")
+            logger_name).getChild("RDAPManagerLambda")
         self.region = config.region
+        self.logger.info('Initializing Manager for region: {}'.format(self.region))
         self.save_path = config.save_path
         self.lambda_ips = []
         """

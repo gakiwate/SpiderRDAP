@@ -71,6 +71,7 @@ class RDAPQueryWorkerLambda(threading.Thread):
 
         json_rdap_data = None
         try:
+            time.sleep(random.uniform(0, 3))
             response = self.aws_client.invoke(
                 FunctionName='rdap-lambda',
                 InvocationType='RequestResponse',

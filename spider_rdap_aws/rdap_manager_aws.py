@@ -20,8 +20,11 @@ class RDAPManagerAWS(threading.Thread):
 
     def __init__(self, config):
         threading.Thread.__init__(self)
+        logger_name = config.logger_name
+        if logger_name == None:
+            logger_name = "SpiderRDAPAWS"
         self.logger = logging.getLogger(
-            "SpiderRDAPAWS").getChild("RDAPManagerAWS")
+            logger_name).getChild("RDAPManagerAWS")
         aws_config = json.load(config.aws_config)
         self.aws_regions = aws_config['REGIONS']
         self.aws_tags = aws_config['TAGS']
