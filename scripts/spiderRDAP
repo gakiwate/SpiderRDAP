@@ -33,6 +33,8 @@ parser.add_argument('--workers', default=100, action='store',
                     type=int, help='number of workers')
 parser.add_argument("--log-level", default="warning",
                     choices=list(LEVELS.keys()))
+parser.add_argument("--retry-count", action='store', type=int,
+                    default=2, help="number of times to retry RDAP query")
 parser.add_argument("--quiet", action='store_true', help='Quiesce output')
 config = parser.parse_args()
 

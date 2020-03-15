@@ -17,6 +17,7 @@ class RDAPManager(threading.Thread):
         threading.Thread.__init__(self)
         self.logger = logging.getLogger("SpiderRDAP").getChild("RDAPManager")
         self.proxy_list = list(config.proxy_list.read().splitlines())
+        self.retry_count = config.retry_count
         """
         Input Queue is left unbounded because of potential for
         deadlock since RDAPQueryWorker tries to reinsert elements in queue.
@@ -28,7 +29,7 @@ class RDAPManager(threading.Thread):
         self.save_threads = [RDAPSaveWorker(
             self, config, self.save_queue) for i in range(0, config.workers)]
         self.worker_threads = [RDAPQueryWorker(
-            self, self.proxy_list, self.input_queue, self.save_queue) for i in range(0, config.workers)]
+            self, self.proxy_list, self.input_queue, self.save_queue, self.retry_count) for i in range(0, config.workers)]
 
         self.stats = {
             'skipped': 0,

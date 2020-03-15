@@ -6,15 +6,17 @@ import time
 import random
 import requests
 
+
 class RDAPQueryWorker(threading.Thread):
 
-    def __init__(self, manager, proxy_list, input_queue, save_queue):
+    def __init__(self, manager, proxy_list, input_queue, save_queue, retry_count):
         threading.Thread.__init__(self)
         self.logger = logging.getLogger(
             "SpiderRDAP").getChild("RDAPQueryWorker")
         self.manager = manager
         self.input_queue = input_queue
         self.save_queue = save_queue
+        self.retry_count = retry_count
         self.proxy_list = proxy_list
 
     def run(self):
@@ -42,9 +44,9 @@ class RDAPQueryWorker(threading.Thread):
                     {'error': None, 'data': json_rdap_data, 'domain': domain, 'timestamp': timestamp})
             elif return_code == 'failed':
                 """
-                If 3 attempts we declare failure!
+                If retry_count attempts fail we declare failure!
                 """
-                if rdap_work_info['attempt'] >= 3:
+                if rdap_work_info['attempt'] >= self.retry_count:
                     self.manager.incrFailed()
                     self.manager.incrSkipped()
                     self.save_queue.put(
@@ -68,7 +70,7 @@ class RDAPQueryWorker(threading.Thread):
 
             self.logger.debug("Marking task done!")
             self.input_queue.task_done()
-            time.sleep(random.uniform(0,1))
+            time.sleep(random.uniform(0, 1))
 
     def rdap_query(self, rdap_work_info):
         domain = rdap_work_info["domain"]
@@ -79,7 +81,8 @@ class RDAPQueryWorker(threading.Thread):
         query_url = "{}/domain/{}".format(rdap_url, domain)
         random_proxy = random.choice(self.proxy_list)
         proxies = {'http': random_proxy, 'https': random_proxy}
-        self.logger.debug("Starting GET Request: {} with proxies {}".format(query_url, proxies))
+        self.logger.debug(
+            "Starting GET Request: {} with proxies {}".format(query_url, proxies))
 
         try:
             r = requests.get(query_url, proxies=proxies, timeout=10)
