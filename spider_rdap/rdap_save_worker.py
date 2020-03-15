@@ -26,8 +26,8 @@ class RDAPSaveWorker(threading.Thread):
             if rdap_data['error'] is None:
                 self.save_data(rdap_data)
             else:
-                f = open('{}/error.txt'.format(self.save_path), 'a')
-                f.write('{}\n'.format(rdap_data['data']))
+                f = open('{}/error_common.txt'.format(self.save_path), 'a')
+                f.write('{}\n'.format(rdap_data['domain']))
                 f.close()
 
             self.logger.debug("Save Queue Size: {}".format(self.save_queue.qsize()))

@@ -27,7 +27,7 @@ class RDAPSaveWorkerAWS(threading.Thread):
                 self.save_data(rdap_data)
             else:
                 f = open('{}/error.txt'.format(self.save_path), 'a')
-                f.write('{}\n'.format(rdap_data['data']))
+                f.write('{}\n'.format(rdap_data['domain']))
                 f.close()
 
             self.logger.debug("Save Queue Size: {}".format(
