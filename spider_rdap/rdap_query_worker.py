@@ -19,7 +19,7 @@ class RDAPQueryWorker(threading.Thread):
         self.save_queue = save_queue
         self.retry_count = retry_count
         self.proxy_list = proxy_list
-        self.fixed_sleep = custom_config.get("fixed_sleep", False)
+        self.max_sleep = custom_config.get("max_sleep", 1)
 
     def run(self):
         while self.manager.inputThreadsAlive() or not self.input_queue.empty():
@@ -72,10 +72,7 @@ class RDAPQueryWorker(threading.Thread):
 
             self.logger.debug("Marking task done!")
             self.input_queue.task_done()
-            if not self.fixed_sleep:
-                time.sleep(random.uniform(0, 1))
-            else:
-                time.sleep(1)
+            time.sleep(random.uniform(0, self.max_sleep))
 
     def rdap_query(self, rdap_work_info):
         domain = rdap_work_info["domain"]
