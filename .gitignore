@@ -108,3 +108,4 @@ venv.bak/
 
 # RDAP Config
 aws_config
+custom_config

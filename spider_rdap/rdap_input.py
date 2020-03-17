@@ -13,9 +13,10 @@ class RDAPInput(threading.Thread):
     RDAPInput Thread
     '''
 
-    def __init__(self, manager, config):
+    def __init__(self, manager, config, custom_config):
         threading.Thread.__init__(self)
-        self.logger = logging.getLogger("SpiderRDAP").getChild("RDAPInput")
+        logger_name = custom_config.get("logger_name", "SpiderRDAP")
+        self.logger = logging.getLogger(logger_name).getChild("RDAPInput")
         self.manager = manager
         self.domain_list = config.domain_list
         """

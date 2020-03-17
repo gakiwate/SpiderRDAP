@@ -13,9 +13,11 @@ class RDAPManager(threading.Thread):
     Manager thread that is responsible for managing the RDAP crawl.
     '''
 
-    def __init__(self, config):
+    def __init__(self, config, custom_config={}):
         threading.Thread.__init__(self)
-        self.logger = logging.getLogger("SpiderRDAP").getChild("RDAPManager")
+        self.custom_config = custom_config
+        logger_name = self.custom_config.get("logger_name", "SpiderRDAP")
+        self.logger = logging.getLogger(logger_name).getChild("RDAPManager")
         self.proxy_list = list(config.proxy_list.read().splitlines())
         self.retry_count = config.retry_count
         """
@@ -24,12 +26,12 @@ class RDAPManager(threading.Thread):
         However, we try to get input_thread to respect maxsize=3 * config.workers
         """
         self.input_queue = queue.Queue()
-        self.input_threads = [RDAPInput(self, config)]
+        self.input_threads = [RDAPInput(self, config, self.custom_config)]
         self.save_queue = queue.Queue()
         self.save_threads = [RDAPSaveWorker(
-            self, config, self.save_queue) for i in range(0, config.workers)]
+            self, config, self.save_queue, self.custom_config) for i in range(0, config.workers)]
         self.worker_threads = [RDAPQueryWorker(
-            self, self.proxy_list, self.input_queue, self.save_queue, self.retry_count) for i in range(0, config.workers)]
+            self, self.proxy_list, self.input_queue, self.save_queue, self.retry_count, self.custom_config) for i in range(0, config.workers)]
 
         self.stats = {
             'skipped': 0,

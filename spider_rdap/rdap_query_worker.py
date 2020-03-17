@@ -9,15 +9,17 @@ import requests
 
 class RDAPQueryWorker(threading.Thread):
 
-    def __init__(self, manager, proxy_list, input_queue, save_queue, retry_count):
+    def __init__(self, manager, proxy_list, input_queue, save_queue, retry_count, custom_config):
         threading.Thread.__init__(self)
+        logger_name = custom_config.get("logger_name", "SpiderRDAP")
         self.logger = logging.getLogger(
-            "SpiderRDAP").getChild("RDAPQueryWorker")
+            logger_name).getChild("RDAPQueryWorker")
         self.manager = manager
         self.input_queue = input_queue
         self.save_queue = save_queue
         self.retry_count = retry_count
         self.proxy_list = proxy_list
+        self.fixed_sleep = custom_config.get("fixed_sleep", False)
 
     def run(self):
         while self.manager.inputThreadsAlive() or not self.input_queue.empty():
@@ -70,7 +72,10 @@ class RDAPQueryWorker(threading.Thread):
 
             self.logger.debug("Marking task done!")
             self.input_queue.task_done()
-            time.sleep(random.uniform(0, 1))
+            if not self.fixed_sleep:
+                time.sleep(random.uniform(0, 1))
+            else:
+                time.sleep(1)
 
     def rdap_query(self, rdap_work_info):
         domain = rdap_work_info["domain"]
