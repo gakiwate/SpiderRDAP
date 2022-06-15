@@ -1,8 +1,8 @@
 # SpiderRDAP
 
-RDAP at Scale
+RDAP at Scale. This RDAP crawler was designed for research at UC San Diego.
 
-This RDAP crawler was designed for research at UCSD.
+If you use SpiderRDAP, I would love to hear at gakiwate - at - cs.ucsd.edu.
 
 ## Installation
 
