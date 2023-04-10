@@ -1,8 +1,8 @@
 # SpiderRDAP
 
-RDAP at Scale. This RDAP crawler was designed for research at UC San Diego. The name was inspired by a previous crawler which used whois: [SpiderWho](https://github.com/lanrat/SpiderWho).
+RDAP at Scale. This RDAP crawler was designed for research at UC San Diego and Stanford. The name was inspired by a previous crawler which used whois: [SpiderWho](https://github.com/lanrat/SpiderWho).
 
-If you use SpiderRDAP, I would love to hear at gakiwate - at - cs.ucsd.edu.
+If you use SpiderRDAP, I would love to hear at gakiwate - at - cs.stanford.edu.
 
 ## Installation
 
