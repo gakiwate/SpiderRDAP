@@ -89,7 +89,7 @@ manager.start()
 Stay alive till manager dies
 """
 print("skipped\tfailed\tin_progress\tdone\ttld_unsupported")
-while manager.isAlive():
+while manager.is_alive():
     if not config.quiet:
         stats = manager.stats
         status_line = "{}\t{}\t{}\t{}\t{}\r".format(

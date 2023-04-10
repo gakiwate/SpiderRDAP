@@ -31,11 +31,11 @@ parser.add_argument('--domain-list', action='store', type=argparse.FileType('r')
 parser.add_argument('--save-path', action='store', type=lambda save_path: isValidPath(save_path),
                     help='file path to save RDAP Output', required=True)
 parser.add_argument('--proxy-list', action='store',
-                    type=argparse.FileType('r'), help='file with list of proxies to use', required=True)
+                    type=argparse.FileType('r'), default=io.TextIOWrapper(io.BytesIO()), help='file with list of proxies to use to scale', required=False)
 parser.add_argument('--custom-config', action='store',
                     type=argparse.FileType('r'), default=io.TextIOWrapper(io.BytesIO(json.dumps({}).encode())),
                     help='file with json formatted config')
-parser.add_argument('--workers', default=100, action='store',
+parser.add_argument('--workers', default=10, action='store',
                     type=int, help='number of workers')
 parser.add_argument("--log-level", default="warning",
                     choices=list(LEVELS.keys()))
@@ -72,7 +72,7 @@ manager.start()
 Stay alive till manager dies
 """
 print("skipped\tfailed\tin_progress\tdone\ttld_unsupported")
-while manager.isAlive():
+while manager.is_alive():
     if not config.quiet:
         stats = manager.stats
         status_line = "{}\t{}\t{}\t{}\t{}\r".format(

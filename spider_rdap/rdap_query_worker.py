@@ -81,8 +81,10 @@ class RDAPQueryWorker(threading.Thread):
         rdap_url = rdap_work_info["rdap_url"][rdap_work_info['attempt'] % len(
             rdap_work_info["rdap_url"])]
         query_url = "{}/domain/{}".format(rdap_url, domain)
-        random_proxy = random.choice(self.proxy_list)
-        proxies = {'http': random_proxy, 'https': random_proxy}
+        proxies = {'http': '', 'https': ''}
+        if len(self.proxy_list):
+            random_proxy = random.choice(self.proxy_list)
+            proxies = {'http': random_proxy, 'https': random_proxy}
         self.logger.debug(
             "Starting GET Request: {} with proxies {}".format(query_url, proxies))
 
