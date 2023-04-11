@@ -13,6 +13,7 @@ class RDAPSaveWorker(threading.Thread):
         self.logger = logging.getLogger(
             logger_name).getChild("RDAPSaveWorker")
         self.save_path = config.save_path
+        self.save_file = open('{}/rdap_{}.txt'.format(self.save_path, int(time.time())), 'a')
         self.manager = manager
         self.save_queue = save_queue
         self.error_file = custom_config.get("error_file", "error_common")
@@ -37,8 +38,8 @@ class RDAPSaveWorker(threading.Thread):
             self.logger.debug("Marking task done!")
             self.save_queue.task_done()
 
+        self.save_file.close()
+
     def save_data(self, rdap_data):
-        json_file = '{}/{}_{}.json'.format(self.save_path,
-                                           rdap_data['domain'], rdap_data['timestamp'])
-        with open(json_file, 'w') as f:
-            json.dump(rdap_data['data'], f)
+        json.dump(rdap_data['data'], self.save_file)
+        self.save_file.write('\n')

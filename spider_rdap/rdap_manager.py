@@ -29,7 +29,7 @@ class RDAPManager(threading.Thread):
         self.input_threads = [RDAPInput(self, config, self.custom_config)]
         self.save_queue = queue.Queue()
         self.save_threads = [RDAPSaveWorker(
-            self, config, self.save_queue, self.custom_config) for i in range(0, config.workers)]
+            self, config, self.save_queue, self.custom_config) for i in range(0, 1)]
         self.worker_threads = [RDAPQueryWorker(
             self, self.proxy_list, self.input_queue, self.save_queue, self.retry_count, self.custom_config) for i in range(0, config.workers)]
 
